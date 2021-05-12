@@ -2,6 +2,7 @@
 from hashlib import sha256
 import json
 import typing
+import time
 
 from .signed_transaction import SignedTransaction
 from .wallet import Wallet
@@ -32,10 +33,6 @@ class Block:
         self.nonce = nonce
         self.miner_wallet = miner_wallet
 
-    def compute_hash(self) -> str:
-        """Computes the hash of the JSON block representation."""
-        return sha256(str(self).encode()).hexdigest()
-
     def __str__(self) -> str:
         return json.dumps(dict(self), sort_keys=True)
 
@@ -46,3 +43,11 @@ class Block:
         yield PREVIOUS_HASH_KEY, self.previous_hash
         yield NONCE_KEY, self.nonce
         yield MINER_WALLET_KEY, dict(self.miner_wallet)
+
+    def compute_hash(self):
+        return sha256(str(self).encode()).hexdigest()
+
+
+def create_genesis_block(miner_wallet: Wallet) -> Block:
+    """Create the first block of the block chain."""
+    return Block(0, [], time.time(), "0", miner_wallet)
