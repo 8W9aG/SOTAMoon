@@ -1,39 +1,43 @@
 """The transaction class."""
 import collections
-import binascii
-import time
+import typing
+import json
 
-from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA
+from .wallet import Wallet, wallet_from_dict
 
 
 GENESIS_SENDER = "GENESIS"
+SENDER_KEY = "sender"
+RECIPIENT_KEY = "recipient"
+VALUE_KEY = "value"
+TIME_KEY = "time"
 
 
 class Transaction:
-    def __init__(self, sender, recipient, value):
+    def __init__(self, sender: Wallet, recipient: Wallet, value: float, transaction_time: float):
         self.sender = sender
         self.recipient = recipient
         self.value = value
-        self.time = time.time()
+        self.time = transaction_time
 
-    def to_dict(self):
-        if self.sender == GENESIS_SENDER:
-            identity = GENESIS_SENDER
-        else:
-            identity = self.sender.identity
+    def sign_transaction(self) -> str:
+        """Sign the transaction."""
+        return self.sender.sign(str(self))
 
-        return collections.OrderedDict({
-            'sender': identity,
-            'recipient': self.recipient.identity,
-            'value': self.value,
-            'time' : self.time
-        })
+    def __str__(self) -> str:
+        return json.dumps(dict(self), sort_keys=True)
 
-    def sign_transaction(self):
-        if self.sender == GENESIS_SENDER:
-            return ""
-        private_key = self.sender._private_key
-        signer = PKCS1_v1_5.new(private_key)
-        h = SHA.new(str(self.to_dict()).encode('utf8'))
-        return binascii.hexlify(signer.sign(h)).decode('ascii')
+    def __iter__(self):
+        yield SENDER_KEY, dict(self.sender)
+        yield RECIPIENT_KEY, dict(self.recipient)
+        yield VALUE_KEY, self.value
+        yield TIME_KEY, self.time
+
+
+def transaction_from_dict(transaction_dict: typing.Dict[str, typing.Any]) -> Transaction:
+    """Deserialise a transaction from a dictionary."""
+    return Transaction(
+        wallet_from_dict(transaction_dict[SENDER_KEY]),
+        wallet_from_dict(transaction_dict[RECIPIENT_KEY]),
+        transaction_dict[VALUE_KEY],
+        transaction_dict[TIME_KEY])
