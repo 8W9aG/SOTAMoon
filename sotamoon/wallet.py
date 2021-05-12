@@ -20,11 +20,7 @@ class Wallet:
    def __init__(self, public_key: str):
       self._public_key = RSA.importKey(binascii.unhexlify(public_key))
       self.verifier = PKCS1_v1_5.new(self._public_key)
-
-   @property
-   def identity(self):
-      """Report the identity of the wallet."""
-      return key_to_str(self._public_key)
+      self.identity = key_to_str(self._public_key)
 
    def verify(self, message: str, signature: str) -> bool:
       """Verify a message with its signature."""
@@ -41,6 +37,8 @@ class Wallet:
    def __iter__(self):
       yield IDENTITY_KEY, self.identity
 
+   def __eq__(self, other):
+      return self.identity == other.identity
 
 def wallet_from_dict(wallet_dict: typing.Dict[str, typing.Any]) -> Wallet:
    """Create a wallet from a dictionary."""

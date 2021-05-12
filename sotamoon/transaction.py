@@ -6,7 +6,6 @@ import json
 from .wallet import Wallet, wallet_from_dict
 
 
-GENESIS_SENDER = "GENESIS"
 SENDER_KEY = "sender"
 RECIPIENT_KEY = "recipient"
 VALUE_KEY = "value"
@@ -23,6 +22,10 @@ class Transaction:
     def sign_transaction(self) -> str:
         """Sign the transaction."""
         return self.sender.sign(str(self))
+
+    def valid(self) -> bool:
+        """Check whether the transaction is valid."""
+        return self.sender != self.recipient
 
     def __str__(self) -> str:
         return json.dumps(dict(self), sort_keys=True)
