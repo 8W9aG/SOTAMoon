@@ -6,6 +6,9 @@ from .wallet import Wallet
 from .block import Block
 from .signed_transaction import SignedTransaction
 from .chain import Chain
+from .proof import Proof
+from .benchmarks.factory import create_benchmark
+from .fs.file_provider import hash_of_file
 
 
 MINIMUM_TRANSACTIONS = 1
@@ -17,16 +20,11 @@ class Miner:
         self.chain = chain
         self.unconfirmed_transactions = []
 
-    def create_genesis_block(self) -> Block:
-        """Create the first block of the block chain."""
-        return Block(0, [], time.time(), "0", self.miner_wallet)
-
-    def proof_of_work(self, block: Block, difficulty: int = 2):
+    def proof_of_work(self, block: Block) -> Proof:
         """Perform the work needed to make the next block."""
-        computed_hash = block.compute_hash()
-        while not computed_hash.startswith('0' * difficulty):
-            block.nonce += 1
-            computed_hash = block.compute_hash()
+        benchmark = create_benchmark(block.proof.benchmark_id)
+        model_path, completion = benchmark.mine(block.proof.completion)
+        return Proof(hash_of_file(model_path), completion, block.proof.benchmark_id, "", "", "")
 
     def is_valid_transaction(self, signed_transaction: SignedTransaction) -> bool:
         """Whether a transaction is valid."""
@@ -46,16 +44,17 @@ class Miner:
         self.unconfirmed_transactions.append(signed_transaction)
         return True
 
-    def mine(self, last_block: Block) -> typing.Optional[Block]:
+    def mine(self, last_block: Block, last_benchmark_block: Block) -> typing.Optional[Block]:
         """Mine a new block for the blockchain."""
         if len(self.unconfirmed_transactions) < MINIMUM_TRANSACTIONS:
             return None
-        new_block = Block(last_block.index + 1,
-                          self.unconfirmed_transactions,
-                          time.time(),
-                          last_block.compute_hash(),
-                          self.miner_wallet)
-        self.proof_of_work(new_block)
+        proof = self.proof_of_work(last_benchmark_block)
+        new_block = Block(
+            self.unconfirmed_transactions,
+            time.time(),
+            last_block.compute_hash(),
+            self.miner_wallet,
+            proof)
         self.unconfirmed_transactions = []
         return new_block
 

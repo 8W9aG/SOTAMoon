@@ -25,16 +25,19 @@ def main() -> None:
     parser.add_argument('--generate_blocks', type=int, default=1, help="The number of blocks to generate")
     args = parser.parse_args()
     while len(CHAIN.chain) < args.generate_blocks:
+        print("Generating next block...")
         transaction = Transaction(WALLET_1, WALLET_2, 30.0, time.time(), "Whatever")
         signed_transaction = SignedTransaction(transaction, transaction.sign_transaction())
         if not MINER.add_new_transaction(signed_transaction):
             print(f"INVALID TRANSACTION: {signed_transaction}")
             return
-        new_block = MINER.mine(CHAIN.last_block)
+        new_block = MINER.mine(CHAIN.last_block, CHAIN.last_block)
         if new_block is None:
             print("COULD NOT MINE NEW BLOCK")
             return
-        CHAIN.add_block(new_block)
+        if not CHAIN.add_block(new_block):
+            print("FAILED TO ADD BLOCK TO CHAIN")
+            return
     print(str(CHAIN))
     if not CHAIN.validate_chain():
         print("ERROR: INVALID CHAIN")

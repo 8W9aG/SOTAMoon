@@ -1,7 +1,7 @@
 """Setup the sotamoon module."""
 import os
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 INSTALL_REQUIRES = []
 with open(
@@ -19,7 +19,7 @@ setup(
     description="A cryptocurrency that solves for state of the art machine learning models",
     author="Will Sackfield",
     author_email="will.sackfield@gmail.com",
-    packages=["sotamoon"],
+    packages=find_packages(),
     install_requires=INSTALL_REQUIRES,
     entry_points={"console_scripts": ["sotamoon=sotamoon.main:main"]},
 )

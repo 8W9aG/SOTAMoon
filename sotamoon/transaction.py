@@ -1,9 +1,9 @@
 """The transaction class."""
-import collections
 import typing
 import json
 
 from .wallet import Wallet, wallet_from_dict
+from .constraints import MAX_STRING_LENGTH
 
 
 SENDER_KEY = "sender"
@@ -11,7 +11,6 @@ RECIPIENT_KEY = "recipient"
 VALUE_KEY = "value"
 TIME_KEY = "time"
 MESSAGE_KEY = "message"
-MAX_MESSAGE_LENGTH = 1024
 
 
 class Transaction:
@@ -28,7 +27,7 @@ class Transaction:
 
     def valid(self) -> bool:
         """Check whether the transaction is valid."""
-        return self.sender != self.recipient and len(self.message) < MAX_MESSAGE_LENGTH
+        return self.sender != self.recipient and len(self.message) < MAX_STRING_LENGTH
 
     def __str__(self) -> str:
         return json.dumps(dict(self), sort_keys=True)

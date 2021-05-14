@@ -1,10 +1,11 @@
 """The chain class."""
-import time
 import json
 
 from .block import Block
-from .signed_transaction import SignedTransaction
 from .wallet import Wallet
+from .fs.joint_provider import JointProvider
+from .benchmarks.factory import create_benchmark
+from .benchmarks.model_factory import create_model
 
 
 MINING_REWARD = 50.0
@@ -14,6 +15,7 @@ class Chain:
     """A class that represents a blockchain."""
     def __init__(self, genesis_block: Block):
         self.chain = [genesis_block]
+        self.provider = JointProvider()
 
     @property
     def last_block(self):
@@ -24,14 +26,22 @@ class Chain:
         previous_hash = self.last_block.compute_hash()
         if previous_hash != block.previous_hash:
             return False
-        if not self.is_valid_proof(block):
+        if not self.verify_block(block):
             return False
         self.chain.append(block)
         return True
 
-    def is_valid_proof(self, block: Block, difficulty: int = 2) -> bool:
-        """Check whether the hash is valid."""
-        return block.compute_hash().startswith('0' * difficulty)
+    def verify_block(self, block: Block) -> bool:
+        """Verifies that the block is valid."""
+        if not block.valid():
+            return False
+        model_path = self.provider.path(block.proof.model_hash)
+        if model_path is None:
+            return False
+        benchmark = create_benchmark(block.proof.benchmark_id)
+        model = create_model(model_path)
+        completion = benchmark.evaluate(model)
+        return completion == block.proof.completion
 
     def balance(self, wallet: Wallet):
         """Determine the balance of a wallet."""
@@ -54,7 +64,7 @@ class Chain:
             if last_block is not None:
                 if block.previous_hash != last_block.compute_hash():
                     return False
-                if not self.is_valid_proof(block):
+                if not self.verify_block(block):
                     return False
             # Update the balances
             balances[block.miner_wallet.identity] = balances.get(block.miner_wallet.identity, 0.0) + MINING_REWARD
