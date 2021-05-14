@@ -25,7 +25,7 @@ def main() -> None:
     parser.add_argument('--generate_blocks', type=int, default=1, help="The number of blocks to generate")
     args = parser.parse_args()
     while len(CHAIN.chain) < args.generate_blocks:
-        transaction = Transaction(WALLET_1, WALLET_2, 30.0, time.time())
+        transaction = Transaction(WALLET_1, WALLET_2, 30.0, time.time(), "Whatever")
         signed_transaction = SignedTransaction(transaction, transaction.sign_transaction())
         if not MINER.add_new_transaction(signed_transaction):
             print(f"INVALID TRANSACTION: {signed_transaction}")

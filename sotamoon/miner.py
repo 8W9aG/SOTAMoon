@@ -8,6 +8,8 @@ from .signed_transaction import SignedTransaction
 from .chain import Chain
 
 
+MINIMUM_TRANSACTIONS = 1
+
 class Miner:
     """A class that represents a miner."""
     def __init__(self, miner_wallet: Wallet, chain: Chain):
@@ -46,7 +48,7 @@ class Miner:
 
     def mine(self, last_block: Block) -> typing.Optional[Block]:
         """Mine a new block for the blockchain."""
-        if not self.unconfirmed_transactions:
+        if len(self.unconfirmed_transactions) < MINIMUM_TRANSACTIONS:
             return None
         new_block = Block(last_block.index + 1,
                           self.unconfirmed_transactions,

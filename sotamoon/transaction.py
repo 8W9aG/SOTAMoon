@@ -10,14 +10,17 @@ SENDER_KEY = "sender"
 RECIPIENT_KEY = "recipient"
 VALUE_KEY = "value"
 TIME_KEY = "time"
+MESSAGE_KEY = "message"
+MAX_MESSAGE_LENGTH = 1024
 
 
 class Transaction:
-    def __init__(self, sender: Wallet, recipient: Wallet, value: float, transaction_time: float):
+    def __init__(self, sender: Wallet, recipient: Wallet, value: float, transaction_time: float, message: str):
         self.sender = sender
         self.recipient = recipient
         self.value = value
         self.time = transaction_time
+        self.message = message
 
     def sign_transaction(self) -> str:
         """Sign the transaction."""
@@ -25,7 +28,7 @@ class Transaction:
 
     def valid(self) -> bool:
         """Check whether the transaction is valid."""
-        return self.sender != self.recipient
+        return self.sender != self.recipient and len(self.message) < MAX_MESSAGE_LENGTH
 
     def __str__(self) -> str:
         return json.dumps(dict(self), sort_keys=True)
@@ -35,6 +38,7 @@ class Transaction:
         yield RECIPIENT_KEY, dict(self.recipient)
         yield VALUE_KEY, self.value
         yield TIME_KEY, self.time
+        yield MESSAGE_KEY, self.message
 
 
 def transaction_from_dict(transaction_dict: typing.Dict[str, typing.Any]) -> Transaction:
@@ -43,4 +47,5 @@ def transaction_from_dict(transaction_dict: typing.Dict[str, typing.Any]) -> Tra
         wallet_from_dict(transaction_dict[SENDER_KEY]),
         wallet_from_dict(transaction_dict[RECIPIENT_KEY]),
         transaction_dict[VALUE_KEY],
-        transaction_dict[TIME_KEY])
+        transaction_dict[TIME_KEY],
+        transaction_dict[MESSAGE_KEY])
