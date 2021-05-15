@@ -8,6 +8,7 @@ from .signed_transaction import SignedTransaction
 from .wallet import Wallet
 from .proof import Proof
 from .benchmarks.mnist import MNIST_BENCHMARK_IDENTIFIER
+from .model import Model
 
 
 TRANSACTIONS_KEY = "transactions"
@@ -57,4 +58,10 @@ def create_genesis_block(miner_wallet: Wallet) -> Block:
         time.time(),
         "0",
         miner_wallet,
-        Proof("18ed48295aa46270de8d4bb6974599becfd3f8c6cc5efb4d62956ae364992628", 94.24, MNIST_BENCHMARK_IDENTIFIER, "", "", ""))
+        Proof(
+            94.24,
+            MNIST_BENCHMARK_IDENTIFIER,
+            "",
+            "",
+            "",
+            Model("18ed48295aa46270de8d4bb6974599becfd3f8c6cc5efb4d62956ae364992628", "")))

@@ -13,9 +13,9 @@ MINING_REWARD = 50.0
 
 class Chain:
     """A class that represents a blockchain."""
-    def __init__(self, genesis_block: Block):
+    def __init__(self, genesis_block: Block, provider: JointProvider):
         self.chain = [genesis_block]
-        self.provider = JointProvider()
+        self.provider = provider
 
     @property
     def last_block(self):
@@ -35,7 +35,7 @@ class Chain:
         """Verifies that the block is valid."""
         if not block.valid():
             return False
-        model_path = self.provider.path(block.proof.model_hash)
+        model_path = self.provider.path(block.proof.model.model_hash)
         if model_path is None:
             return False
         benchmark = create_benchmark(block.proof.benchmark_id)

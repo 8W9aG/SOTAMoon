@@ -9,12 +9,14 @@ from .opened_wallet import generate_wallet
 from .signed_transaction import SignedTransaction
 from .miner import Miner
 from .block import create_genesis_block
+from .fs.joint_provider import JointProvider
 
 
 WALLET_1 = generate_wallet()
 WALLET_2 = Wallet(generate_wallet().identity)
-CHAIN = Chain(create_genesis_block(WALLET_1))
-MINER = Miner(WALLET_1, CHAIN)
+PROVIDER = JointProvider()
+CHAIN = Chain(create_genesis_block(WALLET_1), PROVIDER)
+MINER = Miner(WALLET_1, CHAIN, PROVIDER)
 
 
 def main() -> None:

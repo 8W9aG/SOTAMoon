@@ -9,22 +9,27 @@ from .chain import Chain
 from .proof import Proof
 from .benchmarks.factory import create_benchmark
 from .fs.file_provider import hash_of_file
+from .fs.joint_provider import JointProvider
+from .model import Model
 
 
 MINIMUM_TRANSACTIONS = 1
 
 class Miner:
     """A class that represents a miner."""
-    def __init__(self, miner_wallet: Wallet, chain: Chain):
+    def __init__(self, miner_wallet: Wallet, chain: Chain, provider: JointProvider):
         self.miner_wallet = miner_wallet
         self.chain = chain
+        self.provider = provider
         self.unconfirmed_transactions = []
 
     def proof_of_work(self, block: Block) -> Proof:
         """Perform the work needed to make the next block."""
         benchmark = create_benchmark(block.proof.benchmark_id)
         model_path, completion = benchmark.mine(block.proof.completion)
-        return Proof(hash_of_file(model_path), completion, block.proof.benchmark_id, "", "", "")
+        model_hash = hash_of_file(model_path)
+        model = Model(model_hash, self.provider.distribute(model_hash))
+        return Proof(completion, block.proof.benchmark_id, "", "", "", model)
 
     def is_valid_transaction(self, signed_transaction: SignedTransaction) -> bool:
         """Whether a transaction is valid."""
