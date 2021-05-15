@@ -7,7 +7,7 @@ from .block import Block
 from .signed_transaction import SignedTransaction
 from .chain import Chain
 from .proof import Proof
-from .benchmarks.factory import create_benchmark
+from .benchmarks.factory import BenchmarkFactory
 from .fs.file_provider import hash_of_file
 from .fs.joint_provider import JointProvider
 from .model import Model
@@ -17,15 +17,16 @@ MINIMUM_TRANSACTIONS = 1
 
 class Miner:
     """A class that represents a miner."""
-    def __init__(self, miner_wallet: Wallet, chain: Chain, provider: JointProvider):
+    def __init__(self, miner_wallet: Wallet, chain: Chain, provider: JointProvider, benchmark_factory: BenchmarkFactory):
         self.miner_wallet = miner_wallet
         self.chain = chain
         self.provider = provider
+        self.benchmark_factory = benchmark_factory
         self.unconfirmed_transactions = []
 
     def proof_of_work(self, block: Block) -> Proof:
         """Perform the work needed to make the next block."""
-        benchmark = create_benchmark(block.proof.benchmark_id)
+        benchmark = self.benchmark_factory.create_benchmark(block.proof.benchmark_id)
         model_path, completion = benchmark.mine(block.proof.completion)
         model_hash = hash_of_file(model_path)
         model = Model(model_hash, self.provider.distribute(model_hash))

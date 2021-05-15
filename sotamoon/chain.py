@@ -4,8 +4,8 @@ import json
 from .block import Block
 from .wallet import Wallet
 from .fs.joint_provider import JointProvider
-from .benchmarks.factory import create_benchmark
 from .benchmarks.model_factory import create_model
+from .benchmarks.factory import BenchmarkFactory
 
 
 MINING_REWARD = 50.0
@@ -13,9 +13,10 @@ MINING_REWARD = 50.0
 
 class Chain:
     """A class that represents a blockchain."""
-    def __init__(self, genesis_block: Block, provider: JointProvider):
+    def __init__(self, genesis_block: Block, provider: JointProvider, benchmark_factory: BenchmarkFactory):
         self.chain = [genesis_block]
         self.provider = provider
+        self.benchmark_factory = benchmark_factory
 
     @property
     def last_block(self):
@@ -35,10 +36,10 @@ class Chain:
         """Verifies that the block is valid."""
         if not block.valid():
             return False
-        model_path = self.provider.path(block.proof.model.model_hash)
+        model_path = self.provider.path(block.proof.model.model_hash, link=block.proof.model.magnet_link)
         if model_path is None:
             return False
-        benchmark = create_benchmark(block.proof.benchmark_id)
+        benchmark = self.benchmark_factory.create_benchmark(block.proof.benchmark_id)
         model = create_model(model_path)
         completion = benchmark.evaluate(model)
         return completion == block.proof.completion

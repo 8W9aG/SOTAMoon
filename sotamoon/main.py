@@ -1,6 +1,7 @@
 """The main runner."""
 import argparse
 import time
+import logging
 
 from .chain import Chain
 from .wallet import Wallet
@@ -10,18 +11,21 @@ from .signed_transaction import SignedTransaction
 from .miner import Miner
 from .block import create_genesis_block
 from .fs.joint_provider import JointProvider
+from .benchmarks.factory import BenchmarkFactory
 
 
 WALLET_1 = generate_wallet()
 WALLET_2 = Wallet(generate_wallet().identity)
 PROVIDER = JointProvider()
-CHAIN = Chain(create_genesis_block(WALLET_1), PROVIDER)
-MINER = Miner(WALLET_1, CHAIN, PROVIDER)
+BENCHMARK_FACTORY = BenchmarkFactory(PROVIDER)
+CHAIN = Chain(create_genesis_block(WALLET_1), PROVIDER, BENCHMARK_FACTORY)
+MINER = Miner(WALLET_1, CHAIN, PROVIDER, BENCHMARK_FACTORY)
 
 
 def main() -> None:
     """Run SOTAMoon."""
     print("--- SOTAMoon ---")
+    logging.basicConfig(level=logging.INFO)
     # Parse command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--generate_blocks', type=int, default=1, help="The number of blocks to generate")

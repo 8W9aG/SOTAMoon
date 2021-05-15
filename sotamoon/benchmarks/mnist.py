@@ -1,6 +1,8 @@
 """The MNIST benchmark."""
 import os
 import typing
+from pathlib import Path
+import os
 
 import torch
 import torchvision
@@ -11,10 +13,12 @@ import numpy as np
 
 from .benchmark import Benchmark
 from .model import Model
+from ..fs.provider import Provider
 
 
 MNIST_BENCHMARK_IDENTIFIER = "mnist"
 MNIST_BATCH_SIZE_TEST = 1000
+MNIST_MAGNET_URL = "magnet:?xt=urn:btih:ce990b28668abf16480b8b906640a6cd7e3b8b21&tr=http%3A%2F%2Facademictorrents.com%2Fannounce.php&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969"
 
 
 class Net(nn.Module):
@@ -38,16 +42,24 @@ class Net(nn.Module):
 
 class MNISTBenchmark(Benchmark):
     """The class representing an MNIST benchmark."""
-    def __init__(self):
-        super().__init__(MNIST_BENCHMARK_IDENTIFIER)
+    def __init__(self, provider: Provider):
+        super().__init__(MNIST_BENCHMARK_IDENTIFIER, provider)
 
     def download(self) -> None:
         """Downloads the dataset."""
+        self.provider.path("", link=MNIST_MAGNET_URL, skip_check=True)
+        mnist_folder = os.path.join(self.provider.cache_folder, "mnist")
+        raw_folder = os.path.join(mnist_folder, "raw")
+        if not os.path.exists(raw_folder):
+            files = [x.absolute() for x in Path(mnist_folder).iterdir() if x.is_file()]
+            os.makedirs(raw_folder, exist_ok = True)
+            for raw_file in files:
+                os.symlink(raw_file, os.path.join(raw_folder, os.path.basename(raw_file)))
         self.test_loader = torch.utils.data.DataLoader(
             torchvision.datasets.MNIST(
-                'files/',
+                self.provider.cache_folder,
                 train=False,
-                download=True,
+                download=True, # This is dumb, we need to set this for processing
                 transform=torchvision.transforms.Compose([
                     torchvision.transforms.ToTensor(),
                     torchvision.transforms.Normalize(
@@ -74,11 +86,17 @@ class MNISTBenchmark(Benchmark):
         optimizer = optim.SGD(network.parameters(), lr=learning_rate, momentum=momentum)
         current_completion = 0.0
         train_loader = torch.utils.data.DataLoader(
-            torchvision.datasets.MNIST('files/', train=True, download=True, transform=torchvision.transforms.Compose([
-                torchvision.transforms.ToTensor(),
-                torchvision.transforms.Normalize((0.1307,), (0.3081,))
-            ])
-        ), batch_size=64, shuffle=True)
+            torchvision.datasets.MNIST(
+                self.provider.cache_folder,
+                train=True,
+                download=True,
+                transform=torchvision.transforms.Compose([
+                    torchvision.transforms.ToTensor(),
+                    torchvision.transforms.Normalize((0.1307,), (0.3081,))
+                ])
+            ),
+            batch_size=64,
+            shuffle=True)
         while current_completion <= beat_completion:
             network.train()
             for _, (data, target) in enumerate(train_loader):
@@ -97,10 +115,10 @@ class MNISTBenchmark(Benchmark):
             current_completion = round((float(correct) / float(len(self.test_loader.dataset))) * 100.0, 4)
             print(f"Current Completion: {current_completion} To Beat: {beat_completion}")
         model_path_index = 0
-        model_path = f"results/model_{model_path_index}.pth"
+        model_path = os.path.join(self.provider.cache_folder, f"model_{model_path_index}.pth")
         while os.path.exists(model_path):
             model_path_index += 1
-            model_path = f"results/model_{model_path_index}.pth"
+            model_path = os.path.join(self.provider.cache_folder, f"model_{model_path_index}.pth")
         with torch.no_grad():
             data, _ = next(iter(self.test_loader))
             trace = torch.jit.trace(network, data)

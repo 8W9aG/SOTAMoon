@@ -2,3 +2,4 @@ include requirements.txt
 recursive-include sotamoon *.py
 recursive-include sotamoon *.pth
 recursive-include sotamoon *.txt
+recursive-include sotamoon *.torrent

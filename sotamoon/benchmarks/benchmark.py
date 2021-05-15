@@ -2,11 +2,13 @@
 import typing
 
 from .model import Model
+from ..fs.provider import Provider
 
 class Benchmark:
     """The benchmark base class."""
-    def __init__(self, identifier: str):
+    def __init__(self, identifier: str, provider: Provider):
         self.identifier = identifier
+        self.provider = provider
         self.download()
 
     def download(self) -> None:

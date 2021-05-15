@@ -26,12 +26,11 @@ def file_path_for_file_hash(file_hash: str, folder: str) -> typing.Optional[str]
 class FileProvider(Provider):
     """The class for providing files from the local filesystem."""
     def __init__(self, folder: str):
-        super().__init__("file")
-        self.folder = folder
+        super().__init__("file", folder)
 
-    def path(self, file_hash: str, link: str = None) -> typing.Optional[str]:
+    def path(self, file_hash: str, link: str = None, skip_check: bool = False) -> typing.Optional[str]:
         """Find the path for the file hash."""
-        return file_path_for_file_hash(file_hash, self.folder)
+        return file_path_for_file_hash(file_hash, self.cache_folder)
 
     def distribute(self, _: str) -> typing.Optional[str]:
         """We are already distributed locally on the file provider."""

@@ -10,18 +10,17 @@ from .bittorrent_provider import BitTorrentProvider
 class JointProvider(Provider):
     """The class for combining two or more providers."""
     def __init__(self):
-        super().__init__("joint")
-        cache_folder = "results"
+        super().__init__("joint", "results")
         self.providers = [
             FileProvider(Path(__file__).parent.parent.absolute()),  # Search for models packaged with the program
-            FileProvider(cache_folder),
-            BitTorrentProvider("torrents", cache_folder)
+            FileProvider(self.cache_folder),
+            BitTorrentProvider("torrents", self.cache_folder)
         ]
 
-    def path(self, file_hash: str, link: str = None) -> typing.Optional[str]:
+    def path(self, file_hash: str, link: str = None, skip_check: bool = False) -> typing.Optional[str]:
         """Fetch the path for reading the file."""
         for provider in self.providers:
-            provider_path = provider.path(file_hash, link=link)
+            provider_path = provider.path(file_hash, link=link, skip_check = skip_check)
             if provider_path is not None:
                 return provider_path
         return None
