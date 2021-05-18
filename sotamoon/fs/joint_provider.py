@@ -5,6 +5,7 @@ from pathlib import Path
 from .provider import Provider
 from .file_provider import FileProvider
 from .bittorrent_provider import BitTorrentProvider
+from ..network.node import Node
 
 
 class JointProvider(Provider):
@@ -12,7 +13,6 @@ class JointProvider(Provider):
     def __init__(self):
         super().__init__("joint", "results")
         self.providers = [
-            FileProvider(Path(__file__).parent.parent.absolute()),  # Search for models packaged with the program
             FileProvider(self.cache_folder),
             BitTorrentProvider("torrents", self.cache_folder)
         ]
@@ -32,3 +32,26 @@ class JointProvider(Provider):
             if link is not None:
                 return link
         return None
+
+    def write(self, file_name: str, content: bytes) -> typing.Optional[str]:
+        """Writes contents to a file hash."""
+        for provider in self.providers:
+            file_hash = provider.write(file_name, content)
+            if file_hash is not None:
+                return file_hash
+        return None
+
+    def copy(self, file_path: str) -> typing.Optional[str]:
+        """Copy file to the cache."""
+        for provider in self.providers:
+            new_path = provider.copy(file_path)
+            if new_path is not None:
+                return new_path
+        return None
+
+    def nodes(self, port: int) -> typing.Set[Node]:
+        """Report all the nodes the provider is connected to."""
+        nodes = set()
+        for provider in self.providers:
+            nodes |= provider.nodes(port)
+        return nodes

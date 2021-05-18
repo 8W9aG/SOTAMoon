@@ -2,3 +2,10 @@ pycryptodome==3.10.1
 torch==1.8.1
 torchvision==0.9.1
 -e libraries/libtorrent
+python-snappy==0.6.0
+brotli==1.0.9
+dnspython==2.1.0
+PyBluez==0.23
+zeroconf==0.31.0
+faker==8.1.4
+python-lightblue==1.0.3

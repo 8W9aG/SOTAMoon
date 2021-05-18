@@ -1,8 +1,10 @@
 """The provider base class."""
 import typing
 
+from ..network.nodes import Nodes
 
-class Provider:
+
+class Provider(Nodes):
     """The class defining the common methods for all file providers."""
     def __init__(self, identifier: str, cache_folder: str):
         self.identifier = identifier
@@ -15,5 +17,11 @@ class Provider:
     def path(self, _: str, link: str = None, skip_check: bool = False) -> typing.Optional[str]:
         raise Exception("path not implemented")
 
-    def distribute(self, _: str) -> typing.Optional[str]:
+    def distribute(self, link: str) -> typing.Optional[str]:
         raise Exception("distribute not implemented")
+
+    def write(self, file_name: str, content: bytes) -> typing.Optional[str]:
+        raise Exception("write not implemented")
+
+    def copy(self, file_path: str) -> typing.Optional[str]:
+        raise Exception("copy not implemented")

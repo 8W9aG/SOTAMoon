@@ -21,6 +21,10 @@ Machine Learning is a constantly evolving field that can be measured by standard
 - [torch](https://github.com/pytorch/pytorch)
 - [torchvision](https://github.com/pytorch/vision)
 - [libtorrent](https://www.libtorrent.org/)
+- [snappy](http://google.github.io/snappy/)
+- [brotli](https://github.com/google/brotli)
+- [PyBluez](https://pybluez.github.io/)
+- [zeroconf](https://github.com/jstasiak/python-zeroconf)
 
 ## Installation :inbox_tray:
 

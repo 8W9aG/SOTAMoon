@@ -8,6 +8,7 @@ import libtorrent as lt
 
 from .provider import Provider
 from .file_provider import file_path_for_file_hash
+from ..network.node import Node
 
 
 DHT_ROUTERS = [
@@ -59,9 +60,10 @@ class BitTorrentProvider(Provider):
                 "url": tracker,
                 "tier": 1
             })
+        logging.info(f"Downloading metadata for link: {link}")
         while not handle.has_metadata():
-            logging.info(f"Downloading metadata for link: {link}")
             time.sleep(1)
+        logging.info(f"Downloaded metadata for linkL {link}")
         if len(handle.get_torrent_info().files()) == 1 or skip_check:
             while handle.status().state != lt.torrent_status.seeding:
                 s = handle.status()
@@ -79,17 +81,17 @@ class BitTorrentProvider(Provider):
     def distribute(self, file_hash: str) -> typing.Optional[str]:
         """Distribute the file to other nodes via BT."""
         fs = lt.file_storage()
-        file_path = file_path_for_file_hash(file_hash, self.cache_folder)
-        if file_path is None:
+        file_path = os.path.join(self.cache_folder, file_hash)
+        if not os.path.exists(file_path):
             logging.error(f"Could not distribute file: {file_hash}")
             return None
-        lt.add_files(fs, file_path)
+        lt.add_files(fs, file_path_for_file_hash(file_hash, self.cache_folder))
         t = lt.create_torrent(fs)
         # Only add 1 tracker here so we get a consistent BTIH
         t.add_tracker("udp://tracker.openbittorrent.com:6969/announce", 0)
         t.set_creator(f"sotamoon")
         t.set_comment(file_hash)
-        lt.set_piece_hashes(t, self.cache_folder)
+        lt.set_piece_hashes(t, file_path)
         torrent = t.generate()
         torrent_file = os.path.join(self.torrent_folder, file_hash + ".torrent")
         with open(torrent_file, "wb") as f:
@@ -100,3 +102,20 @@ class BitTorrentProvider(Provider):
             'save_path': self.cache_folder,
         })
         return lt.make_magnet_uri(torrent_info)
+
+    def write(self, file_name: str, content: bytes) -> typing.Optional[str]:
+        """Writes contents to a file hash."""
+        return None
+
+    def copy(self, file_path: str) -> typing.Optional[str]:
+        """Copy file to the cache."""
+        return None
+
+    def nodes(self, port: int) -> typing.Set[Node]:
+        """Report all the nodes the provider is connected to."""
+        nodes = set()
+        for torrent in self.ses.get_torrents():
+            for peer_info in torrent.get_peer_info():
+                ip_address, _ = peer_info.ip
+                nodes.add(Node(ip_address, port))
+        return nodes

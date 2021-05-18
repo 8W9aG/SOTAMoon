@@ -1,7 +1,9 @@
 """The proof class."""
+import typing
+
 from .constraints import MAX_STRING_LENGTH
 from .benchmarks.factory import BENCHMARK_IDENTIFIERS
-from .model import Model
+from .model import Model, model_from_dict
 
 
 COMPLETION_KEY = "completion"
@@ -38,3 +40,15 @@ class Proof:
         yield LICENSE_KEY, self.license
         yield MESSAGE_KEY, self.message
         yield MODEL_KEY, dict(self.model)
+
+
+def proof_from_dict(proof_dict: typing.Dict[str, typing.Any]) -> Proof:
+    """Deserialise a proof from a dictionary."""
+    return Proof(
+        proof_dict[COMPLETION_KEY],
+        proof_dict[BENCHMARK_ID_KEY],
+        proof_dict[CITATION_KEY],
+        proof_dict[LICENSE_KEY],
+        proof_dict[MESSAGE_KEY],
+        model_from_dict(proof_dict[MODEL_KEY])
+    )

@@ -3,6 +3,7 @@ import os
 import typing
 from pathlib import Path
 import os
+import logging
 
 import torch
 import torchvision
@@ -113,7 +114,7 @@ class MNISTBenchmark(Benchmark):
                     pred = output.data.max(1, keepdim=True)[1]
                     correct += pred.eq(target.data.view_as(pred)).sum()
             current_completion = round((float(correct) / float(len(self.test_loader.dataset))) * 100.0, 4)
-            print(f"Current Completion: {current_completion} To Beat: {beat_completion}")
+            logging.info(f"Current Completion: {current_completion} To Beat: {beat_completion}")
         model_path_index = 0
         model_path = os.path.join(self.provider.cache_folder, f"model_{model_path_index}.pth")
         while os.path.exists(model_path):
@@ -123,4 +124,6 @@ class MNISTBenchmark(Benchmark):
             data, _ = next(iter(self.test_loader))
             trace = torch.jit.trace(network, data)
             torch.jit.save(trace, model_path)
-        return model_path, current_completion
+        new_model_path = self.provider.copy(model_path)
+        os.remove(model_path)
+        return new_model_path, current_completion

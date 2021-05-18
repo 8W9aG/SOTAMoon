@@ -1,10 +1,6 @@
 """The signed transaction class."""
-import collections
 import typing
 import json
-import binascii
-
-from Crypto.Hash import SHA
 
 from .transaction import Transaction, transaction_from_dict
 

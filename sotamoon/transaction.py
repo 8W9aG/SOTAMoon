@@ -39,6 +39,18 @@ class Transaction:
         yield TIME_KEY, self.time
         yield MESSAGE_KEY, self.message
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, Transaction):
+            return False
+        return self.sender == o.sender \
+            and self.recipient == o.recipient \
+            and self.value == o.value \
+            and self.time == o.time \
+            and self.message == o.message
+
+    def __hash__(self) -> int:
+        return hash(str(self))
+
 
 def transaction_from_dict(transaction_dict: typing.Dict[str, typing.Any]) -> Transaction:
     """Deserialise a transaction from a dictionary."""

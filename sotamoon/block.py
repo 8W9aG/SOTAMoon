@@ -3,12 +3,14 @@ from hashlib import sha256
 import json
 import typing
 import time
+import os
 
-from .signed_transaction import SignedTransaction
-from .wallet import Wallet
-from .proof import Proof
+from .signed_transaction import SignedTransaction, signed_transaction_from_dict
+from .wallet import Wallet, wallet_from_dict
+from .proof import Proof, proof_from_dict
 from .benchmarks.mnist import MNIST_BENCHMARK_IDENTIFIER
 from .model import Model
+from .fs.provider import Provider
 
 
 TRANSACTIONS_KEY = "transactions"
@@ -48,11 +50,17 @@ class Block:
         yield PROOF_KEY, dict(self.proof)
 
     def compute_hash(self):
+        """Compute the hash of this block."""
         return sha256(str(self).encode()).hexdigest()
 
 
-def create_genesis_block(miner_wallet: Wallet) -> Block:
+def create_genesis_block(miner_wallet: Wallet, provider: Provider) -> Block:
     """Create the first block of the block chain."""
+    model_hash = "18ed48295aa46270de8d4bb6974599becfd3f8c6cc5efb4d62956ae364992628"
+    file_path = provider.path(model_hash)
+    if file_path is None:
+        file_path = provider.copy(os.path.join(os.path.dirname(__file__), "mnist.pth"))
+    link = provider.distribute(model_hash)
     return Block(
         [],
         time.time(),
@@ -64,4 +72,14 @@ def create_genesis_block(miner_wallet: Wallet) -> Block:
             "",
             "",
             "",
-            Model("18ed48295aa46270de8d4bb6974599becfd3f8c6cc5efb4d62956ae364992628", "")))
+            Model(model_hash, link)))
+
+def block_from_dict(block_dict: typing.Dict[str, typing.Any]) -> Block:
+    """Deserialise a block from a dictionary."""
+    return Block(
+        [signed_transaction_from_dict(x) for x in block_dict[TRANSACTIONS_KEY]],
+        block_dict[TIMESTAMP_KEY],
+        block_dict[PREVIOUS_HASH_KEY],
+        wallet_from_dict(block_dict[MINER_WALLET_KEY]),
+        proof_from_dict(block_dict[MINER_WALLET_KEY]),
+    )

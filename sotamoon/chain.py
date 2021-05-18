@@ -1,7 +1,10 @@
 """The chain class."""
 import json
+import typing
 
-from .block import Block
+import brotli
+
+from .block import Block, block_from_dict
 from .wallet import Wallet
 from .fs.joint_provider import JointProvider
 from .benchmarks.model_factory import create_model
@@ -13,8 +16,8 @@ MINING_REWARD = 50.0
 
 class Chain:
     """A class that represents a blockchain."""
-    def __init__(self, genesis_block: Block, provider: JointProvider, benchmark_factory: BenchmarkFactory):
-        self.chain = [genesis_block]
+    def __init__(self, blocks: typing.List[Block], provider: JointProvider, benchmark_factory: BenchmarkFactory):
+        self.chain = blocks
         self.provider = provider
         self.benchmark_factory = benchmark_factory
 
@@ -83,9 +86,29 @@ class Chain:
             last_block = block
         return True
 
+    def magnet_link(self) -> str:
+        """Get the magnet link representing this chain."""
+        compressed_chain = brotli.compress(str(self))
+        file_hash = self.provider.write("chain.br", compressed_chain)
+        return self.provider.distribute(file_hash)
+
+    def resolve_conflict(self, magnet_link: str):
+        """Resolves any conflicts with another chain."""
+        if magnet_link == self.magnet_link():
+            return
+        chain_path = self.provider.path("", link=magnet_link, skip_check=True)
+        with open(chain_path) as chain_handle:
+            blocks = [block_from_dict(x) for x in json.loads(brotli.decompress(chain_handle.read()))]
+            test_chain = Chain(blocks, self.provider, self.benchmark_factory)
+            if len(test_chain) > len(self.chain) and test_chain.validate_chain():
+                self.chain = test_chain
+
     def __str__(self) -> str:
         return json.dumps(list(self), sort_keys=True, indent=4)
 
     def __iter__(self):
         for block in self.chain:
             yield dict(block)
+
+    def __len__(self):
+        return len(self.chain)

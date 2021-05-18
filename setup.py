@@ -5,6 +5,8 @@ import shutil
 
 from setuptools import setup, find_packages
 
+from sotamoon import __version__
+
 
 def install_requires() -> typing.List[str]:
     """Find the install requires strings from requirements.txt"""
@@ -32,7 +34,7 @@ def copy_trackers_list():
 copy_trackers_list()
 setup(
     name="sotamoon",
-    version="0.0.1",
+    version=__version__,
     description="A cryptocurrency that solves for state of the art machine learning models",
     author="Will Sackfield",
     author_email="will.sackfield@gmail.com",
