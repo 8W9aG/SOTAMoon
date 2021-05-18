@@ -25,6 +25,8 @@ Machine Learning is a constantly evolving field that can be measured by standard
 - [brotli](https://github.com/google/brotli)
 - [PyBluez](https://pybluez.github.io/)
 - [zeroconf](https://github.com/jstasiak/python-zeroconf)
+- [faker](https://pypi.org/project/Faker/)
+- [lightblue](https://pypi.org/project/python-lightblue/)
 
 ## Installation :inbox_tray:
 

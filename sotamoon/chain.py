@@ -79,6 +79,8 @@ class Chain:
                     return False
                 balances[signed_transaction.transaction.sender.identity] = balances.get(signed_transaction.transaction.sender.identity, 0.0) - signed_transaction.transaction.value
                 balances[signed_transaction.transaction.recipient.identity] = balances.get(signed_transaction.transaction.recipient.identity, 0.0) + signed_transaction.transaction.value
+                balances[block.miner_wallet.identity] += signed_transaction.transaction.gas
+                balances[signed_transaction.transaction.sender.identity] -= signed_transaction.transaction.gas
             # Check the balances
             for wallet in balances:
                 if balances[wallet] < 0.0:

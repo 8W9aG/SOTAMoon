@@ -11,15 +11,17 @@ RECIPIENT_KEY = "recipient"
 VALUE_KEY = "value"
 TIME_KEY = "time"
 MESSAGE_KEY = "message"
+GAS_KEY = "gas"
 
 
 class Transaction:
-    def __init__(self, sender: Wallet, recipient: Wallet, value: float, transaction_time: float, message: str):
+    def __init__(self, sender: Wallet, recipient: Wallet, value: float, transaction_time: float, message: str, gas: float):
         self.sender = sender
         self.recipient = recipient
         self.value = value
         self.time = transaction_time
         self.message = message
+        self.gas = gas
 
     def sign_transaction(self) -> str:
         """Sign the transaction."""
@@ -27,7 +29,7 @@ class Transaction:
 
     def valid(self) -> bool:
         """Check whether the transaction is valid."""
-        return self.sender != self.recipient and len(self.message) < MAX_STRING_LENGTH
+        return self.sender != self.recipient and len(self.message) < MAX_STRING_LENGTH and self.gas > 0.0
 
     def __str__(self) -> str:
         return json.dumps(dict(self), sort_keys=True)
@@ -38,6 +40,7 @@ class Transaction:
         yield VALUE_KEY, self.value
         yield TIME_KEY, self.time
         yield MESSAGE_KEY, self.message
+        yield GAS_KEY, self.gas
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, Transaction):
@@ -46,7 +49,8 @@ class Transaction:
             and self.recipient == o.recipient \
             and self.value == o.value \
             and self.time == o.time \
-            and self.message == o.message
+            and self.message == o.message \
+            and self.gas == o.gas
 
     def __hash__(self) -> int:
         return hash(str(self))
@@ -59,4 +63,5 @@ def transaction_from_dict(transaction_dict: typing.Dict[str, typing.Any]) -> Tra
         wallet_from_dict(transaction_dict[RECIPIENT_KEY]),
         transaction_dict[VALUE_KEY],
         transaction_dict[TIME_KEY],
-        transaction_dict[MESSAGE_KEY])
+        transaction_dict[MESSAGE_KEY],
+        transaction_dict[GAS_KEY])
