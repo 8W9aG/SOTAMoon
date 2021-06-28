@@ -21,6 +21,6 @@ class DNS(Nodes):
             try:
                 result = dns.resolver.query(dns_seed, "A")
                 nodes |= set([Node(x, port) for x in result])
-            except dns.resolver.NXDOMAIN:
+            except (dns.resolver.NXDOMAIN, dns.exception.Timeout):
                 pass
         return nodes

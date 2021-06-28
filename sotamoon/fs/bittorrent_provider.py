@@ -62,8 +62,9 @@ class BitTorrentProvider(Provider):
             })
         logging.info(f"Downloading metadata for link: {link}")
         while not handle.has_metadata():
-            time.sleep(1)
-        logging.info(f"Downloaded metadata for linkL {link}")
+            logging.info(f"Downloading metadata for link: {link}")
+            time.sleep(5)
+        logging.info(f"Downloaded metadata for link: {link}")
         if len(handle.get_torrent_info().files()) == 1 or skip_check:
             while handle.status().state != lt.torrent_status.seeding:
                 s = handle.status()

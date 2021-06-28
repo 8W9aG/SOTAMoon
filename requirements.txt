@@ -9,3 +9,9 @@ PyBluez==0.23
 zeroconf==0.31.0
 faker==8.1.4
 python-lightblue==1.0.3
+pygad==2.14.1
+gym==0.18.3
+nni==2.3
+torchinfo==0.1.5
+tensorflow==2.5.0
+stable-baselines3==1.0

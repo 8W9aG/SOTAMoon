@@ -1,6 +1,5 @@
 """The miner class."""
 import time
-import typing
 
 from .wallet import Wallet
 from .block import Block
