@@ -1,6 +1,3 @@
-[submodule "libraries/libtorrent"]
-	path = libraries/libtorrent
-	url = https://github.com/arvidn/libtorrent.git
 [submodule "libraries/trackerslist"]
 	path = libraries/trackerslist
 	url = https://github.com/ngosang/trackerslist.git

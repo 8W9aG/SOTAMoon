@@ -39,6 +39,8 @@ $ source venv/bin/activate
 
 Then perform the installation:
 
+macOS:
+
 ```shell
 $ xcode-select --install
 $ brew install boost-build boost openssl@1.1 boost-python3
@@ -46,7 +48,15 @@ $ cd libraries/libtorrent && python setup.py build && python setup.py install
 $ python setup.py install
 ```
 
-This has only been tested on macOS but should work on Linux or Windows with minor alterations.
+Linux:
+
+```shell
+$ sudo apt-get install git python3-venv libboost-all-dev build-essential bluez libbluetooth-dev python3-dev
+$ python3 -m venv venv
+$ source venv/bin/activate
+$ pip install -r requirements.txt
+$ python setup.py install
+```
 
 ## Usage example :eyes:
 
