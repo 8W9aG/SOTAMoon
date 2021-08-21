@@ -1,7 +1,7 @@
 pycryptodome==3.10.1
-torch==1.8.1
-torchvision==0.9.1
--e libraries/libtorrent
+torch==1.9.0
+torchvision==0.10.0
+python-libtorrent-bin==2.0.2
 python-snappy==0.6.0
 brotli==1.0.9
 dnspython==2.1.0
